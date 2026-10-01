@@ -14,7 +14,7 @@ services:
       - key: AGENT_MODEL
         value: claude-sonnet-5-5
       - key: DB_PATH
-        value: /data/support.db
+        value: /srv/support.db
       - key: KB_DIR
         value: /srv/data/kb
       - key: ALLOW_BODY_EMAIL
@@ -23,7 +23,4 @@ services:
         value: "100"
       - key: RATE_LIMIT_PER_MIN
         value: "20"
-    disk:
-      name: support-data
-      mountPath: /data
-      sizeGB: 1
+
