@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: resolve-agent
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false              # you'll set this in the Render dashboard
+      - key: ADMIN_API_KEY
+        sync: false
+      - key: AGENT_MODEL
+        value: claude-sonnet-5-5
+      - key: DB_PATH
+        value: /data/support.db
+      - key: KB_DIR
+        value: /srv/data/kb
+      - key: ALLOW_BODY_EMAIL
+        value: "1"               # set to 0 in production behind an auth gateway
+      - key: MAX_AUTO_REFUND
+        value: "100"
+      - key: RATE_LIMIT_PER_MIN
+        value: "20"
+    disk:
+      name: support-data
+      mountPath: /data
+      sizeGB: 1

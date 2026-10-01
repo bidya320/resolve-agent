@@ -1,0 +1,9 @@
+services:
+  support:
+    build: .
+    env_file: .env
+    ports: ["8000:8000"]
+    volumes: ["support-data:/data"]
+    restart: unless-stopped
+volumes:
+  support-data:

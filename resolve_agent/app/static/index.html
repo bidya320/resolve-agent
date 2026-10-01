@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Support</title>
+<style>
+body{margin:0;font:16px/1.4 system-ui,sans-serif;background:#f3f6f6;color:#16232b;display:flex;justify-content:center}
+main{width:100%;max-width:560px;height:100dvh;display:flex;flex-direction:column;background:#fff;border:1px solid #d5dede}
+header{padding:12px 14px;border-bottom:1px solid #d5dede;display:flex;gap:8px;align-items:center}
+header b{flex:1} input{font:inherit;padding:8px 10px;border:1px solid #c5d0d0;border-radius:8px;min-width:0}
+#log{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.m{max-width:85%;padding:8px 12px;border-radius:14px;background:#dcefed;white-space:pre-wrap}
+.m.me{align-self:flex-end;background:#16232b;color:#fff}
+#rate{padding:8px 12px;display:none;gap:6px;align-items:center;border-top:1px solid #d5dede}
+#rate button{font-size:18px;border:0;background:none;cursor:pointer}
+form{display:flex;gap:8px;padding:10px 12px;border-top:1px solid #d5dede}
+form input{flex:1} button.go{border:0;background:#0e7c7b;color:#fff;border-radius:8px;padding:0 16px;font:inherit;cursor:pointer}
+#st{font-size:12px;color:#5b6b73}
+</style></head><body><main>
+<header><b>Customer support</b><input id="em" type="email" placeholder="your email" value="ana@example.com" aria-label="Email"></header>
+<div id="log" aria-live="polite"></div>
+<div id="rate"><span>How did we do?</span><span id="stars"></span></div>
+<form id="f"><input id="q" placeholder="Describe your issue" autocomplete="off" maxlength="2000" aria-label="Message"><button class="go">Send</button></form>
+</main><script>
+var cid=null,log=document.getElementById('log'),$=function(i){return document.getElementById(i)},poll=null;
+function add(t,me){var d=document.createElement('div');d.className='m'+(me?' me':'');d.textContent=t;log.appendChild(d);log.scrollTop=log.scrollHeight}
+function post(u,b){return fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)})}
+function status(s){$('rate').style.display=s==='resolved'?'flex':'none';clearInterval(poll);if(s==='escalated'||s==='pending_approval')poll=setInterval(sync,5000)}
+async function sync(){if(!cid)return;var r=await fetch('/api/cases/'+cid+'/messages?email='+encodeURIComponent($('em').value));if(!r.ok)return;var j=await r.json();log.innerHTML='';j.messages.forEach(function(m){add(m.text,m.role==='user')});status(j.status)}
+$('f').onsubmit=async function(e){e.preventDefault();var t=$('q').value.trim();if(!t)return;$('q').value='';add(t,true);
+ var r=await post('/api/chat',{message:t,email:$('em').value,case_id:cid});
+ if(!r.ok){add(r.status===429?'Please wait a moment before sending more messages.':'Something went wrong. Try again.');return}
+ var j=await r.json();cid=j.case_id;add(j.reply);status(j.status)};
+for(var i=1;i<=5;i++){(function(n){var b=document.createElement('button');b.textContent='★';b.setAttribute('aria-label',n+' stars');b.onclick=async function(){await post('/api/feedback',{case_id:cid,rating:n,email:$('em').value});$('rate').innerHTML='Thanks for your feedback!';};$('stars').appendChild(b)})(i)}
+add('Hi! I can help with orders, refunds and account questions.');
+</script></body></html>
